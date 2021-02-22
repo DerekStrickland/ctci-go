@@ -91,7 +91,7 @@ func NewOpenHashTable(hashFn func(string)int) OpenHashTable {
 	}
 }
 
-func (h *OpenHashTable) String() string {
+func (h OpenHashTable) String() string {
 	builder := strings.Builder{}
 
 	builder.WriteString("{\n\tmembers: {\n")
@@ -108,7 +108,6 @@ func (h *OpenHashTable) String() string {
 
 	builder.WriteString("\t}\n}")
 	return builder.String()
-	// return fmt.Sprintf("%+v", h.members)
 }
 
 func (h *OpenHashTable) Hash(value string) int {

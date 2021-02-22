@@ -64,7 +64,7 @@ func TestOpenHashTableAddAndFind(t *testing.T) {
 		hashTable.Add(s)
 	}
 
-	fmt.Println(fmt.Sprintf("OpenHashTable is \n%s", hashTable.String()))
+	fmt.Println(fmt.Sprintf("OpenHashTable is \n%+v", hashTable))
 
 	for _, s := range testStrings {
 		// fmt.Println(fmt.Sprintf("resolving entry for string %s", s))
