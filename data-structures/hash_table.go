@@ -2,6 +2,7 @@ package datastructures
 
 import (
 	"fmt"
+	"strings"
 )
 
 // NaiveHash can be used to inject a function with high probability of key collision
@@ -13,6 +14,7 @@ func NaiveHash(value string) int {
 		sum = sum + int(chr)
 	}
 
+	// fmt.Println(fmt.Sprintf("NaiveHash calculated sum %d for %s", sum, value))
 	return sum
 }
 
@@ -68,7 +70,7 @@ func (h * HashTable) Find(value string) string {
 // OpenHashTable uses separate chaining (open hashing) to manage key collisions
 // as a set of linked lists
 type OpenHashTable struct {
-	members map[int]LinkedString
+	members map[int]*LinkedString
 	hashFunc func(string) int
 }
 
@@ -84,48 +86,73 @@ func NewOpenHashTable(hashFn func(string)int) OpenHashTable {
 	}
 
 	return OpenHashTable{
-		members: make(map[int]LinkedString),
+		members: make(map[int]*LinkedString),
 		hashFunc: hashFn,
 	}
 }
 
 func (h *OpenHashTable) String() string {
-	return fmt.Sprintf("%+v", h.members)
+	builder := strings.Builder{}
+
+	builder.WriteString("{\n\tmembers: {\n")
+
+	for k, m := range h.members {
+		builder.WriteString(fmt.Sprintf("\t\t{ key: %d, member: %+v }\n", k, m))
+		n := m.Next
+
+		for n != nil {
+			builder.WriteString(fmt.Sprintf("\t\t{ key: %d, member: %+v }\n", k, n))
+			n = n.Next
+		}
+	}
+
+	builder.WriteString("\t}\n}")
+	return builder.String()
+	// return fmt.Sprintf("%+v", h.members)
 }
 
 func (h *OpenHashTable) Hash(value string) int {
-	return hash(value)
+	return h.hashFunc(value)
 }
 
 func (h *OpenHashTable) Add(value string) {
-	key := hash(value)
+	key := h.hashFunc(value)
 
 	// if no member for this key insert first node
 	if el, ok := h.members[key]; !ok {
-		h.members[key] = LinkedString{
+		h.members[key] = &LinkedString{
 			Prev: nil,
 			Next: nil,
 			Value: value,
 		}
 	} else { // walk list and link to last node
-		next := el.Next
-		prev := &el
+		prev := el
+		next := prev.Next
+
+		//fmt.Println(fmt.Sprintf("prev: %+v", prev))
+		//fmt.Println(fmt.Sprintf("next: %+v", next))
 
 		for next != nil {
 			prev = next
 			next = next.Next
+			//fmt.Println(fmt.Sprintf("for prev: %+v", prev))
+			//fmt.Println(fmt.Sprintf("for next: %+v", next))
 		}
 
-		prev.Next = &LinkedString{
+		next = &LinkedString{
 			Value: value,
 			Prev: prev,
 			Next: nil,
 		}
+		fmt.Println(fmt.Sprintf("final next: %+v", next))
+
+		prev.Next = next
+		fmt.Println(fmt.Sprintf("final prev: %+v", prev))
 	}
 }
 
 func (h *OpenHashTable) Find(value string) *string {
-	key := h.Hash(value)
+	key := h.hashFunc(value)
 
 	if el, ok := h.members[key]; ok {
 		if el.Value == value {

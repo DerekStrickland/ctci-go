@@ -56,16 +56,18 @@ func TestHashTableAddAndFind(t *testing.T) {
 }
 
 func TestOpenHashTableAddAndFind(t *testing.T) {
-	testStrings := []string{"now is the", "time for all", "good people", "to come to", "the aid of their country", "now is the", "time for all", "good people", "to come to", "the aid of their country"}
+	testStrings := []string{ "dabc", "abcd", "bcda", "cdab", "ghef", "efgh", "fghe", "hefg"}
+
 	hashTable := NewOpenHashTable(NaiveHash)
 
 	for _, s := range testStrings {
 		hashTable.Add(s)
 	}
 
-	fmt.Println(fmt.Sprintf("OpenHashTable is %+v", hashTable))
+	fmt.Println(fmt.Sprintf("OpenHashTable is \n%s", hashTable.String()))
 
 	for _, s := range testStrings {
+		// fmt.Println(fmt.Sprintf("resolving entry for string %s", s))
 		require.Equal(t, s, *hashTable.Find(s), "OpenHashTable failed to find test strings")
 	}
 }
