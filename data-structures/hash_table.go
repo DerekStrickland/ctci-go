@@ -170,3 +170,95 @@ func (h *OpenHashTable) Find(value string) *string {
 
 	return nil
 }
+
+type ClosedHashTable struct {
+	capacity int
+	members map[int]string
+	hashFunc func(string) int
+}
+
+func NewClosedHashTable(capacity int, f func(string) int) ClosedHashTable {
+	return ClosedHashTable{
+		capacity: capacity,
+		members: make(map[int]string, capacity),
+		hashFunc: f,
+	}
+}
+
+func (h *ClosedHashTable) Add(value string) {
+	key := h.hashFunc(value)
+	_, found := h.members[key]
+
+	for found {
+		key = (key + 1) % h.capacity
+		_, found = h.members[key]
+	}
+
+	h.members[key] = value
+}
+
+func (h *ClosedHashTable) Find(value string) *string {
+	key := h.hashFunc(value)
+	el, found := h.members[key]
+
+	for found {
+		if el == value {
+			return &el
+		}
+
+		key = (key + 1) % h.capacity
+		el, found = h.members[key]
+	}
+
+	return nil
+}
+
+type QuadraticHashTable struct {
+	capacity int
+	members map[int]string
+	hashFunc func(string)int
+}
+
+func NewQuadraticHashTable(capacity int, hashFn func(string)int) QuadraticHashTable {
+	return QuadraticHashTable{
+		capacity: capacity,
+		members: make(map[int]string, capacity),
+		hashFunc: hashFn,
+	}
+}
+
+func (h *QuadraticHashTable) quadFunc(key, factor int) int {
+	return (key + (factor * factor)) % h.capacity
+}
+
+func (h *QuadraticHashTable) Add(value string) {
+	key := h.hashFunc(value)
+	factor := 0
+
+	_, found := h.members[key]
+	for found {
+		factor++
+		key = h.quadFunc(key, factor)
+		_, found = h.members[key]
+	}
+
+	h.members[key] = value
+}
+
+func (h *QuadraticHashTable) Find(value string) *string {
+	key := h.hashFunc(value)
+	factor := 0
+
+	el, found := h.members[key]
+
+	for found {
+		if el == value {
+			return &el
+		}
+		factor++
+		key = h.quadFunc(key, factor)
+		el, found = h.members[key]
+	}
+
+	return nil
+}

@@ -2,19 +2,19 @@ package datastructures
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
 func TestHashFuncIsUniqueForSameSet(t *testing.T) {
-	require := require.New(t)
 
 	hashTable := NewHashTable()
 
 	values := []string{"abcdefghijklmnop", "ponmlkjihgfedcba"}
 
-	require.True(hashTable.Hash(values[0]) != hashTable.Hash(values[1]))
+	require.True(t, hashTable.Hash(values[0]) != hashTable.Hash(values[1]))
 }
 
 func TestHashFuncFrequency(t *testing.T) {
@@ -36,7 +36,12 @@ func TestHashFuncFrequency(t *testing.T) {
 	for i := int('a'); i < int('z'); i++ {
 		ch := string(rune(i))
 		key := hashTable.Hash(ch)
-		fmt.Println(fmt.Sprintf("Character %s with key %d has count %d", ch, key, testChars[key]))
+		count := testChars[key]
+		if strings.Index(testString, ch) > - 1 {
+			require.Greater(t, count, 0)
+		} else {
+			require.Equal(t, count, 0)
+		}
 	}
 }
 
@@ -70,4 +75,64 @@ func TestOpenHashTableAddAndFind(t *testing.T) {
 		// fmt.Println(fmt.Sprintf("resolving entry for string %s", s))
 		require.Equal(t, s, *hashTable.Find(s), "OpenHashTable failed to find test strings")
 	}
+}
+
+func TestOpenHashNotFound(t *testing.T) {
+	hashTable := NewOpenHashTable(NaiveHash)
+
+	result := hashTable.Find("foo")
+
+	require.Nil(t, result, "OpenHashTable failed to evaluate non-member string to nil")
+}
+
+func TestClosedHashTableAddAndFind(t *testing.T) {
+	testStrings := []string{ "dabc", "abcd", "bcda", "cdab", "ghef", "efgh", "fghe", "hefg"}
+
+	hashTable := NewClosedHashTable(8, NaiveHash)
+
+	for _, s := range testStrings {
+		hashTable.Add(s)
+	}
+
+	fmt.Println(fmt.Sprintf("ClosedHashTable is \n%+v", hashTable))
+
+	for _, s := range testStrings {
+		// fmt.Println(fmt.Sprintf("resolving entry for string %s", s))
+		require.Equal(t, s, *hashTable.Find(s), "ClosedHashTable failed to find test strings")
+	}
+}
+
+func TestClosedHashNotFound(t *testing.T) {
+	hashTable := NewClosedHashTable(1, NaiveHash)
+	hashTable.Add("oof")
+
+	result := hashTable.Find("foo")
+
+	require.Nil(t, result, "ClosedHashTable failed to evaluate non-member string to nil")
+}
+
+func TestQuadraticHashTableAddAndFind(t *testing.T) {
+	testStrings := []string{ "dabc", "abcd", "bcda", "cdab", "ghef", "efgh", "fghe", "hefg"}
+
+	hashTable := NewQuadraticHashTable(8, NaiveHash)
+
+	for _, s := range testStrings {
+		hashTable.Add(s)
+	}
+
+fmt.Println(fmt.Sprintf("QuadraticHashTable is \n%+v", hashTable))
+
+	for _, s := range testStrings {
+		// fmt.Println(fmt.Sprintf("resolving entry for string %s", s))
+		require.Equal(t, s, *hashTable.Find(s), "QuadraticHashTable failed to find test strings")
+	}
+}
+
+func TestQuadraticHashNotFound(t *testing.T) {
+	hashTable := NewQuadraticHashTable(1, NaiveHash)
+	hashTable.Add("oof")
+
+	result := hashTable.Find("foo")
+
+	require.Nil(t, result, "QuadraticHashTable failed to evaluate non-member string to nil")
 }
