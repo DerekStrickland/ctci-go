@@ -31,7 +31,7 @@ func hash(value string) int {
 	}
 
 	hash := sum % 2069
-	// fmt.Println(fmt.Sprintf("hash for value %s evaluated to %d", value, hash))
+	//fmt.Println(fmt.Sprintf("hash for value %s evaluated to %d", value, hash))
 	return hash
 }
 
@@ -185,12 +185,16 @@ func NewClosedHashTable(capacity int, f func(string) int) ClosedHashTable {
 	}
 }
 
+func (h *ClosedHashTable) closeFunc(key int) int {
+	return (key + 1) % h.capacity
+}
+
 func (h *ClosedHashTable) Add(value string) {
 	key := h.hashFunc(value)
 	_, found := h.members[key]
 
 	for found {
-		key = (key + 1) % h.capacity
+		key = h.closeFunc(key)
 		_, found = h.members[key]
 	}
 
@@ -206,7 +210,7 @@ func (h *ClosedHashTable) Find(value string) *string {
 			return &el
 		}
 
-		key = (key + 1) % h.capacity
+		key = h.closeFunc(key)
 		el, found = h.members[key]
 	}
 
@@ -257,6 +261,59 @@ func (h *QuadraticHashTable) Find(value string) *string {
 		}
 		factor++
 		key = h.quadFunc(key, factor)
+		el, found = h.members[key]
+	}
+
+	return nil
+}
+
+type DoubleHashTable struct {
+	capacity int
+	members map[int]string
+	hashFunc func(string) int
+}
+
+func NewDoubleHashTable(capacity int, hashFn func(string) int) DoubleHashTable {
+	if hashFn == nil {
+		hashFn = hash
+	}
+	return DoubleHashTable{
+		capacity: capacity,
+		members: make(map[int]string, capacity),
+		hashFunc:  hashFn,
+	}
+}
+
+func (h *DoubleHashTable) doubleHash(key int, value string) int {
+	fmt.Println(fmt.Sprintf("doubleHash executing for value %s with and key %d", value, key))
+	return (key + 1) * hash(value)
+}
+
+func (h *DoubleHashTable) Add(value string) {
+	key := h.hashFunc(value)
+	fmt.Println(fmt.Sprintf("hashFunc for value %s evaluated to %d", value, key))
+	el, found := h.members[key]
+
+	for found && el != value {
+		key = h.doubleHash(key, value)
+		fmt.Println(fmt.Sprintf("doubleHash for value %s and el %s evaluated to %d", value, el, key))
+		fmt.Println(fmt.Sprintf("members are %+v", h.members))
+		el, found = h.members[key]
+	}
+
+	h.members[key] = value
+	fmt.Println(fmt.Sprintf("final members are %+v", h.members))
+}
+
+func (h *DoubleHashTable) Find(value string) *string {
+	key := h.hashFunc(value)
+	el, found := h.members[key]
+
+	for found {
+		if el == value {
+			return &el
+		}
+		key = h.doubleHash(key, value)
 		el, found = h.members[key]
 	}
 

@@ -136,3 +136,29 @@ func TestQuadraticHashNotFound(t *testing.T) {
 
 	require.Nil(t, result, "QuadraticHashTable failed to evaluate non-member string to nil")
 }
+
+func TestDoubleHashTableAddAndFind(t *testing.T) {
+	testStrings := []string{ "dabc", "abcd", "bcda", "cdab", "ghef", "efgh", "fghe", "hefg"}
+
+	hashTable := NewDoubleHashTable(8, NaiveHash)
+
+	for _, s := range testStrings {
+		hashTable.Add(s)
+	}
+
+	fmt.Println(fmt.Sprintf("DoubleHashTable is \n%+v", hashTable))
+
+	for _, s := range testStrings {
+		fmt.Println(fmt.Sprintf("resolving entry for string %s", s))
+		require.NotNil(t, hashTable.Find(s), "DoubleHashTable failed to find test strings")
+	}
+}
+
+func TestDoubleHashNotFound(t *testing.T) {
+	hashTable := NewDoubleHashTable(1, NaiveHash)
+	hashTable.Add("oof")
+
+	result := hashTable.Find("foo")
+
+	require.Nil(t, result, "DoubleHashTable failed to evaluate non-member string to nil")
+}
